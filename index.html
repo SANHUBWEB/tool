@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Easy Editor</title>
+<style>
+:root{--bg:#e1dfdd;--card:#fff;--tx:#201f1e;--mu:#605e5c;--bd:#d2d0ce;--ac:#2b579a;--hd:#2b579a;--act:#fff;--soft:#f3f2f1;--ok:#107c10;--okb:#dff6dd;--no:#a4262c;--nob:#fde7e9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1a19;--card:#292827;--tx:#f3f2f1;--mu:#c8c6c4;--bd:#484644;--ac:#7ca3e6;--hd:#1f3a68;--act:#0b1b36;--soft:#323130;--ok:#92c353;--okb:#1b2b12;--no:#f1707b;--nob:#3b1a1c}}
+:root[data-theme="dark"]{--bg:#1b1a19;--card:#292827;--tx:#f3f2f1;--mu:#c8c6c4;--bd:#484644;--ac:#7ca3e6;--hd:#1f3a68;--act:#0b1b36;--soft:#323130;--ok:#92c353;--okb:#1b2b12;--no:#f1707b;--nob:#3b1a1c}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;gap:10px;padding:8px 10px;background:var(--hd);color:#fff;align-items:center}
+.logo{width:28px;height:28px;border-radius:4px;background:#fff;color:#2b579a;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif}
+h1{font-size:15px;font-weight:600;margin:0;flex:1}
+button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:3px;padding:9px 12px}
+button:active{background:var(--soft)}
+button.p{background:var(--ac);color:var(--act);border-color:var(--ac);font-weight:600}
+button:disabled{opacity:.45}
+header button{background:transparent;color:#fff;border-color:rgba(255,255,255,.65);padding:6px 14px}
+header button.p{background:#fff;color:#2b579a;border-color:#fff}
+.net-status{display:flex;align-items:center;gap:8px;padding:8px 13px;background:var(--card);border-bottom:1px solid var(--bd);font-size:12px;color:var(--mu);min-height:18px}
+.net-dot{width:9px;height:9px;border-radius:50%;background:#d13438;box-shadow:0 0 0 3px rgba(209,52,56,.12);flex:0 0 9px}
+.net-status.online .net-dot{background:#107c10;box-shadow:0 0 0 3px rgba(16,124,16,.13)}
+.net-status.wait .net-dot{background:#ca8a04;box-shadow:0 0 0 3px rgba(202,138,4,.13)}
+.net-status strong{font-weight:650;color:var(--tx)}
+.tabs{overflow-x:auto;display:flex;background:var(--card);border-bottom:1px solid var(--bd)}
+.tabs button{flex:1 0 auto;white-space:nowrap;padding-left:14px;padding-right:14px;font-size:14px;border:0;border-radius:0;border-bottom:3px solid transparent;background:none;color:var(--mu);padding:11px 4px}
+.tabs button.on{border-bottom-color:var(--ac);color:var(--ac);font-weight:600}
+main{flex:1;overflow:auto;padding:10px;position:relative}
+.hide{display:none!important}
+#empty{text-align:center;color:var(--mu);margin-top:60px}
+#pvw.off{position:absolute;left:-9999px;top:0;width:calc(100vw - 20px)}
+.zb{display:flex;gap:0;justify-content:center;margin:0 auto 10px;width:max-content;background:var(--card);border:1px solid var(--bd);border-radius:3px;overflow:hidden}
+.zb button{border:0;border-radius:0;padding:6px 18px;background:none}
+.zb button+button{border-left:1px solid var(--bd)}
+#pv{overflow-x:auto;overflow-y:hidden}
+#pv .docx-wrapper,.hd .docx-wrapper{padding:0!important;background:transparent!important}
+#pv .docx-wrapper>section.docx,.hd .docx-wrapper>section.docx{margin:0 0 12px!important;box-shadow:0 0 0 1px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.28)}
+.hd{position:absolute;left:-99999px;top:0;width:900px;background:#fff}
+.card{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:3px;padding:12px;margin-bottom:12px}
+.card label{display:block;font-size:12px;color:var(--mu);margin:8px 0 3px}
+input[type=text]{width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #8a8886;border-radius:2px;background:var(--card);color:var(--tx)}
+input[type=text]:focus{outline:2px solid var(--ac);outline-offset:-1px;border-color:var(--ac)}
+.top{display:flex;gap:8px;align-items:center}
+.top input{flex:1;font-weight:600;border-color:transparent;background:none;padding-left:0}
+.ch{display:inline-block;font-size:12px;padding:3px 9px;border-radius:2px;margin:8px 6px 0 0;background:var(--soft);color:var(--mu)}
+.ch.ok{background:var(--okb);color:var(--ok);font-weight:600}
+.ch.no{background:var(--nob);color:var(--no)}
+.hint{font-size:13px;color:var(--mu);margin:2px 2px 12px}
+.snip{font-size:13px;color:var(--mu);margin-top:6px;word-break:break-word}
+mark{background:#fff100;color:#000;border-radius:0}
+.big{width:100%;margin-top:4px}
+.tb{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:var(--okb);color:var(--ok);font-weight:600;border-top:1px solid var(--bd)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:flex-end}
+.sbox{background:var(--card);width:100%;max-height:88%;overflow:auto;border-radius:10px 10px 0 0;padding:12px 12px calc(14px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:16px;font-weight:600}
+.opt{border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:3px;padding:12px;margin-bottom:10px;background:var(--card)}
+.opt b{display:block}.opt span{color:var(--mu);font-size:13px}
+select,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #8a8886;border-radius:2px;background:var(--card);color:var(--tx);font:inherit}
+.sbox label{display:block;font-size:12px;color:var(--mu);margin:10px 0 3px}
+.ft{display:flex;gap:8px;padding:8px 10px;background:var(--soft);border-top:1px solid var(--bd)}
+.ft button{flex:1}
+
+/* App-like responsive polish */
+:root{--radius:12px}
+body{min-height:100dvh;letter-spacing:.005em}
+header{position:sticky;top:0;z-index:20;padding:10px 12px;box-shadow:0 2px 10px rgba(0,0,0,.12);gap:8px}
+.logo{width:34px;height:34px;border-radius:9px;flex:0 0 34px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+h1{font-size:16px;line-height:1.15;min-width:0}
+#fileLabel{display:block;font-size:11px;font-weight:400;opacity:.82;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:34vw;margin-top:3px}
+header button{border-radius:9px;padding:8px 10px;white-space:nowrap}
+.tabs{position:sticky;top:54px;z-index:15;box-shadow:0 2px 5px rgba(0,0,0,.04);scrollbar-width:thin}
+.tabs button{min-height:46px;padding:10px 14px;flex:1 0 auto}
+main{width:100%;box-sizing:border-box;max-width:1040px;margin:0 auto;padding:14px 12px 24px}
+.card{border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 2px 7px rgba(0,0,0,.035);border-left-width:4px}
+button{min-height:42px;border-radius:9px;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
+button:active{transform:scale(.985)}
+input[type=text],select,textarea{border-radius:9px;min-height:42px}
+textarea{line-height:1.5;resize:vertical}
+.big{min-height:46px;font-weight:600}
+.ch{border-radius:999px}
+.opt{border-radius:10px;padding:14px}
+.ft{position:sticky;bottom:0;z-index:20;padding:9px 12px calc(9px + env(safe-area-inset-bottom,0px));box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+.ft button{min-height:44px}
+.sheet{align-items:flex-end;backdrop-filter:blur(3px)}
+.sbox{max-width:760px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.2)}
+#empty{padding:26px 20px;border:1px dashed var(--bd);border-radius:16px;max-width:520px;margin:48px auto 0;line-height:1.8;background:var(--card)}
+#pv .docx-wrapper>section.docx{border-radius:2px}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+@media(min-width:760px){
+ body{font-size:15px}
+ header{padding:12px 22px}
+ .tabs{padding:0 max(12px,calc((100vw - 1000px)/2))}
+ main{padding:22px 24px 30px}
+ #fl,#sm,#dt,#ed{max-width:900px;margin:0 auto}
+ #pvw{max-width:1000px;margin:0 auto}
+ .ft{justify-content:center;padding:10px 24px}
+ .ft button{flex:0 1 220px}
+ .ft #sbtn{flex:0 0 130px}
+ .sheet{align-items:center}
+ .sbox{border-radius:18px;max-height:85vh;width:min(760px,calc(100% - 32px))}
+}
+@media(max-width:390px){
+ header{gap:6px;padding:8px}
+ h1{font-size:14px}
+ #fileLabel{max-width:25vw}
+ header button{padding:7px 8px;font-size:13px}
+ .tabs button{padding:9px 11px;font-size:13px}
+ main{padding:9px}
+ .ft{gap:6px;padding-left:8px;padding-right:8px}
+ .ft button{padding:8px 7px;font-size:13px}
+}
+#savePreview{margin-top:14px;min-height:50px;border-radius:12px;box-shadow:0 4px 12px rgba(43,87,154,.18)}
+.preview-save-actions{max-width:680px;margin:14px auto 4px;padding:12px;background:var(--card);border:1px solid var(--bd);border-radius:14px}
+@media(prefers-reduced-motion:reduce){button{transition:none}}
+
+
+/* iPhone fixes: prevent oversized header controls and keep text readable */
+*{box-sizing:border-box}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+header{display:grid;grid-template-columns:38px minmax(0,1fr) auto auto;gap:7px;align-items:center}
+header h1{min-width:0;overflow:hidden}
+header button{font-size:13px;padding:8px 9px;min-width:0}
+.net-status{font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.tabs{width:100%;max-width:100%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.tabs button{flex:0 0 auto;min-width:max-content;font-size:14px;padding:10px 13px}
+main{min-width:0;overflow-x:hidden}
+.ft{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ft button{min-width:0;padding:9px 5px;font-size:13px;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:430px){
+ header{grid-template-columns:34px minmax(0,1fr) auto;gap:6px;padding:9px 8px}
+ .logo{width:32px;height:32px;flex-basis:32px}
+ header h1{font-size:15px}
+ #fileLabel{max-width:100%;font-size:10px}
+ header #cvb{grid-column:2;grid-row:2;justify-self:start;padding:6px 10px;font-size:12px}
+ header #imp{grid-column:3;grid-row:1 / span 2;align-self:center;padding:9px 10px;font-size:13px}
+ .net-status{padding:9px 10px;font-size:12px;align-items:flex-start}
+ .tabs button{padding:10px 12px}
+ .ft{padding-left:7px;padding-right:7px}
+ .ft button{font-size:12px}
+}
+@media(min-width:600px){header{display:flex}header h1{flex:1}}
+
+</style>
+</head>
+<body>
+<header>
+<span class="logo">W</span><h1>Word Easy Editor<span id="fileLabel">Document editor Âˇ DOCX</span></h1>
+<input type="file" id="f" accept=".docx" class="hide">
+<button id="cvb">Convert</button><button class="p" id="imp">Import</button>
+</header>
+<div id="netStatus" class="net-status wait" role="status" aria-live="polite"><span class="net-dot"></span><span><strong id="netTitle">Connection check ho raha haiâŚ</strong> <span id="netDetail">Tools check ho rahe hain</span></span></div>
+<div class="tabs"><button id="t1" class="on">Preview</button><button id="t2">Replace</button><button id="t3">Smart</button><button id="t4">Detect</button><button id="t5">Edit</button></div>
+<main>
+<div id="empty">Word (.docx) file import karo.<br>Phir Replace ya Smart tab se text badlo.</div>
+<div id="pvw" class="off">
+<div class="zb"><button id="zo">â</button><button id="zf">Fit</button><button id="zi">+</button></div>
+<div id="pv"></div>
+<div class="preview-save-actions" aria-label="Save edited document">
+<button id="savePreview" class="p big" disabled>Save Edited Word File (.docx)</button>
+<p class="hint" style="text-align:center;margin:7px 0 0">Edit karne ke baad yahan tap karke updated file save karein.</p>
+</div>
+</div>
+<div id="fl" class="hide">
+<p class="hint">Purane text me file ka text likho, naya text me jo chahiye. Type karte hi preview badalta hai.</p>
+<div id="rows"></div>
+<button id="add" class="big">+ Naya option</button>
+<button id="seePv" class="big p" style="margin-top:10px">Preview dekho</button>
+</div>
+<div id="dt" class="hide"></div>
+<div id="ed" class="hide"><input type="text" id="eq" placeholder="Paragraph search karo..." autocomplete="off" style="margin-bottom:10px"><div id="el"></div></div>
+<div id="sm" class="hide">
+<p class="hint">Koi bhi text likho (jaise Santosh). File me auto search hoga aur mil jaye to green tick aayega.</p>
+<input type="text" id="sq" placeholder="Search text... (jaise Santosh)" autocomplete="off">
+<div id="sr" style="margin-top:12px"></div>
+<div id="sb" class="card hide">
+<label style="margin-top:0">Sabko iske sath replace karo</label>
+<input type="text" id="sv" placeholder="Naya text">
+<button class="p big" id="sgo" style="margin-top:10px">Replace all</button>
+</div>
+</div>
+</main>
+<div id="tb" class="tb hide"><span id="tm"></span><button class="p" id="tv">Preview dekho</button></div>
+<div class="ft"><button id="dw" disabled>Download Word</button><button id="dp" class="p" disabled>Download PDF</button><button id="sbtn" style="flex:none">Settings</button></div>
+<div id="hid" class="hd"></div>
+<input type="file" id="cf" class="hide"><input type="file" id="df" class="hide" multiple>
+<div id="sheet" class="sheet hide"><div class="sbox"><div class="sh"><span id="stt"></span><button id="sx">â</button></div><div id="sbd"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.2/dist/docx-preview.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)};
+/* Online indicator: green means internet is reported online and core libraries are loaded. */
+function updateNetStatus(){
+ var box=$('netStatus'),title=$('netTitle'),detail=$('netDetail');if(!box||!title||!detail)return;
+ var online=navigator.onLine!==false;
+ var ready=typeof JSZip!=='undefined'&&typeof docx!=='undefined'&&typeof html2canvas!=='undefined'&&typeof jspdf!=='undefined';
+ box.classList.remove('online','wait');
+ if(!online){title.textContent='Offline';detail.textContent='Internet connect karein; online libraries load nahi hongi.';return}
+ if(ready){box.classList.add('online');title.textContent='ONLINE - GREEN SIGNAL';detail.textContent='Internet connected aur main tools ready hain.'}
+ else{box.classList.add('wait');title.textContent='Internet connected';detail.textContent='Kuch libraries load nahi hui. Page reload karke dobara check karein.'}
+}
+window.addEventListener('online',updateNetStatus);window.addEventListener('offline',updateNetStatus);
+var PART=/^word\/(document|header\d*|footer\d*)\.xml$/;
+var buf=null,base='file',blob=null,timer=null,busy=false,again=false,pageW=0,zm=1,paras=[];
+var fields=[{l:'Name',f:'',r:''},{l:'Mobile number',f:'',r:''},{l:'Address',f:'',r:''}];
+try{var s0=JSON.parse(localStorage.getItem('wef2')||'null');if(s0&&s0.length)fields=s0}catch(e){}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function unesc(t){return t.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&')}
+function re(f){return new RegExp(f.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi')}
+function cnt(f){if(!f)return 0;var n=0;paras.forEach(function(p){var m=p.match(re(f));if(m)n+=m.length});return n}
+function keep(){try{localStorage.setItem('wef2',JSON.stringify(fields))}catch(e){} scheduleDraftSave()}
+/* Crash/exit recovery: keep the imported document and edits in this browser */
+var draftDb=null,draftTimer=null;
+function openDraftDB(){return new Promise(function(resolve,reject){if(draftDb)return resolve(draftDb);var req=indexedDB.open('we_word_editor_recovery',1);req.onupgradeneeded=function(){if(!req.result.objectStoreNames.contains('drafts'))req.result.createObjectStore('drafts',{keyPath:'id'})};req.onsuccess=function(){draftDb=req.result;resolve(draftDb)};req.onerror=function(){reject(req.error)}})}
+function scheduleDraftSave(){clearTimeout(draftTimer);if(!buf)return;draftTimer=setTimeout(saveDraftNow,250)}
+async function saveDraftNow(){if(!buf)return;try{var db=await openDraftDB();await new Promise(function(resolve,reject){var tx=db.transaction('drafts','readwrite');tx.objectStore('drafts').put({id:'latest',buf:buf,base:base,edits:edits,fields:fields,updated:Date.now()});tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error)}})}catch(e){try{localStorage.setItem('we_draft_edits',JSON.stringify({base:base,edits:edits,fields:fields,updated:Date.now()}))}catch(x){}}}
+async function restoreDraftOnStart(){try{var db=await openDraftDB();var d=await new Promise(function(resolve,reject){var tx=db.transaction('drafts','readonly'),q=tx.objectStore('drafts').get('latest');q.onsuccess=function(){resolve(q.result)};q.onerror=function(){reject(q.error)}});if(!d||!d.buf)return;if(!confirm('Pichli baar aapki Word file editor se band ho gayi thi. Kya aap apni pichhli file aur edits wapas lana chahte hain?'))return;await openDoc(d.buf,d.base+'.docx');edits=d.edits||{};if(d.fields)fields=d.fields;keep();draw();await render();show(1);note('â Pichhla kaam restore ho gaya');}catch(e){/* recovery is best effort */}}
+function show(t){
+ $('t1').classList.toggle('on',t==1);$('t2').classList.toggle('on',t==2);$('t3').classList.toggle('on',t==3);$('t4').classList.toggle('on',t==4);$('t5').classList.toggle('on',t==5);
+ $('pvw').classList.toggle('off',t!=1||!buf);$('empty').classList.toggle('hide',t!=1||!!buf);
+ $('fl').classList.toggle('hide',t!=2);$('sm').classList.toggle('hide',t!=3);$('dt').classList.toggle('hide',t!=4);$('ed').classList.toggle('hide',t!=5);
+ document.querySelector('main').scrollTop=0;if(t==5)drawEd();if(t==1){applyZoom();$('tb').classList.add('hide')}}
+function note(m){$('tm').textContent=m;$('tb').classList.remove('hide')}
+$('t1').onclick=function(){show(1)};$('t2').onclick=function(){show(2)};$('t3').onclick=function(){show(3)};$('t4').onclick=function(){show(4)};$('t5').onclick=function(){show(5)};
+$('seePv').onclick=function(){show(1)};
+$('tv').onclick=function(){show(1)};
+function chips(f,r){
+ if(!f)return '<span class="ch">Purana text likho</span>';
+ var c=cnt(f);if(!buf)return '<span class="ch">File import karo</span>';
+ if(!c)return '<span class="ch no">â File me nahi mila</span>';
+ return '<span class="ch ok">â Mila ('+c+')</span>'+(r!==''?'<span class="ch ok">â Replace hua</span>':'')}
+function draw(){var h='';fields.forEach(function(x,i){
+ h+='<div class="card"><div class="top"><input type="text" data-i="'+i+'" data-k="l" placeholder="Option ka naam" value="'+esc(x.l)+'"><button data-d="'+i+'">â</button></div>'+
+ '<label>Purana text (file me jo likha hai)</label><input type="text" data-i="'+i+'" data-k="f" value="'+esc(x.f)+'">'+
+ '<label>Naya text</label><input type="text" data-i="'+i+'" data-k="r" value="'+esc(x.r)+'">'+
+ '<div id="st'+i+'">'+chips(x.f,x.r)+'</div></div>'});
+ $('rows').innerHTML=h}
+$('rows').oninput=function(e){var i=e.target.dataset.i;if(i==null)return;fields[i][e.target.dataset.k]=e.target.value;keep();
+ $('st'+i).innerHTML=chips(fields[i].f,fields[i].r);clearTimeout(timer);timer=setTimeout(render,350)};
+$('rows').onclick=function(e){var d=e.target.dataset.d;if(d==null)return;fields.splice(d,1);keep();draw();render()};
+$('add').onclick=function(){fields.push({l:'Option',f:'',r:''});keep();draw()};
+function rep(xml,f,v){
+ var ef=esc(f),ev=esc(v),tr=/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g;
+ return xml.replace(/<w:p[ >][\s\S]*?<\/w:p>/g,function(p){
+  var ts=[],m;tr.lastIndex=0;while((m=tr.exec(p)))ts.push(m[1]);
+  var full=ts.join(''),ms=[],r=re(ef);
+  while((m=r.exec(full)))ms.push([m.index,m.index+m[0].length]);
+  if(!ms.length)return p;
+  var own=[];ts.forEach(function(t,i){for(var k=0;k<t.length;k++)own.push(i)});
+  var out=ts.map(function(){return ''}),mi=0;
+  for(var c=0;c<full.length;c++){
+   while(mi<ms.length&&c>=ms[mi][1])mi++;
+   var inM=mi<ms.length&&c>=ms[mi][0];
+   if(inM){if(c===ms[mi][0])out[own[c]]+=ev}else out[own[c]]+=full[c]}
+  var i=0;
+  return p.replace(tr,function(){return '<w:t xml:space="preserve">'+out[i++]+'</w:t>'})})}
+async function load(b){
+ var z=await JSZip.loadAsync(b);paras=[];pruns=[];fontW={};defFont='';
+ var st=z.file('word/styles.xml');
+ if(st){var sx=await st.async('string'),dm=sx.match(/<w:docDefaults>[\s\S]*?<w:rFonts[^>]*?w:ascii="([^"]+)"/);if(dm)defFont=dm[1]}
+ for(var n of Object.keys(z.files)){if(!PART.test(n))continue;
+  var x=await z.file(n).async('string');
+  (x.match(/<w:p[ >][\s\S]*?<\/w:p>/g)||[]).forEach(function(p){
+   var t='',rs=[];
+   (p.match(/<w:r[ >][\s\S]*?<\/w:r>/g)||[]).forEach(function(r){
+    var tx='',m,q=/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g;while((m=q.exec(r)))tx+=m[1];tx=unesc(tx);if(!tx)return;
+    var fm=r.match(/<w:rFonts[^>]*?w:ascii="([^"]+)"/),fn=fm?fm[1]:(defFont||'Default');
+    rs.push({a:t.length,b:t.length+tx.length,f:fn});t+=tx;fontW[fn]=(fontW[fn]||0)+tx.length});
+   if(t.trim()){paras.push(t);pruns.push(rs)}})}}
+var edits={},pcount=0;
+function applyEdits(x){return x.replace(/<w:p[ >][\s\S]*?<\/w:p>/g,function(p){
+ var ts=[],m,tr=/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g;while((m=tr.exec(p)))ts.push(m[1]);
+ if(!unesc(ts.join('')).trim())return p;var i=pcount++;
+ if(edits[i]===undefined)return p;
+ var k=0,nt=esc(edits[i]);
+ return p.replace(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g,function(){return '<w:t xml:space="preserve">'+(k++?'':nt)+'</w:t>'})})}
+function drawEd(){
+ var el=$('el');if(!buf){el.innerHTML='<p class="hint">Pehle file import ya convert karo.</p>';return}
+ var q=$('eq').value.trim().toLowerCase(),h='',n=0;
+ for(var i=0;i<paras.length;i++){
+  var cur=edits[i]!==undefined?edits[i]:paras[i];
+  if(q&&cur.toLowerCase().indexOf(q)<0)continue;
+  if(++n>300){h+='<p class="hint">Aur paragraph dekhne ke liye search karo.</p>';break}
+  var fn=(pruns[i]&&pruns[i][0])?pruns[i][0].f:'';
+  h+='<div class="card" style="padding:8px 10px"><div class="top"><span class="ch" style="margin:0">#'+(i+1)+(fn?' Âˇ đ¤ '+esc(fn):'')+'</span>'+(edits[i]!==undefined?'<span class="ch ok" style="margin:0">â Edit hua</span>':'')+'<span style="flex:1"></span><button data-er="'+i+'">âş</button></div>'+
+   '<textarea data-ei="'+i+'" rows="'+Math.min(6,Math.max(1,Math.ceil(cur.length/34)))+'" style="margin-top:6px">'+esc(cur)+'</textarea></div>'}
+ el.innerHTML=h||'<p class="hint">Koi paragraph nahi mila.</p>'}
+$('eq').oninput=drawEd;
+$('el').oninput=function(e){var i=e.target.dataset.ei;if(i==null)return;var v=e.target.value.replace(/\n/g,' ');
+ if(v===paras[i])delete edits[i];else edits[i]=v;scheduleDraftSave();clearTimeout(timer);timer=setTimeout(render,500)};
+$('el').onclick=function(e){var b=e.target.closest('[data-er]');if(!b)return;delete edits[b.dataset.er];drawEd();render()};
+async function render(){
+ if(!buf)return;
+ if(typeof JSZip==='undefined'||typeof docx==='undefined'){$('pv').innerHTML='<p style="color:#c33">Library load nahi hui. Internet check karke page reload karo.</p>';return}
+ if(busy){again=true;return}busy=true;
+ try{
+  var z=await JSZip.loadAsync(buf);pcount=0;
+  for(var n of Object.keys(z.files)){if(!PART.test(n))continue;
+   var x=await z.file(n).async('string');
+   x=applyEdits(x);fields.forEach(function(q){if(q.f)x=rep(x,q.f,q.r)});z.file(n,x)}
+  blob=await z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  var pv=$('pv');pv.innerHTML='';$('empty').classList.add('hide');
+  await docx.renderAsync(blob,pv,null,{inWrapper:true,breakPages:true});
+  var pg=pv.querySelector('section.docx');pageW=pg?pg.offsetWidth:0;applyZoom();
+  $('dw').disabled=false;$('dp').disabled=false;$('savePreview').disabled=false;
+ }catch(e){$('pv').innerHTML='<p style="color:#c33">File nahi khuli: '+e.message+'</p>'}
+ busy=false;if(again){again=false;render()}}
+function applyZoom(){var p=$('pv'),w=p.querySelector('.docx-wrapper');if(!w||!pageW)return;
+ var k=((p.clientWidth||innerWidth-20)/pageW)*zm;
+ w.style.cssText+=';zoom:1;width:'+pageW+'px;align-items:flex-start;transform-origin:0 0;transform:scale('+k+')';
+ p.style.height=Math.ceil(w.offsetHeight*k)+'px'}
+window.addEventListener('resize',applyZoom);
+$('zo').onclick=function(){zm=Math.max(.5,zm-.25);applyZoom()};
+$('zi').onclick=function(){zm=Math.min(4,zm+.25);applyZoom()};
+$('zf').onclick=function(){zm=1;applyZoom()};
+/* Smart search */
+function smart(){
+ var q=$('sq').value.trim(),sr=$('sr');$('sb').classList.add('hide');
+ if(!buf){sr.innerHTML='<span class="ch">Pehle file import karo</span>';return}
+ if(q.length<2){sr.innerHTML='';return}
+ var vs={};
+ paras.forEach(function(p){var r=re(q),m;while((m=r.exec(p))){var k=m[0];
+  if(!vs[k]){var a=Math.max(0,m.index-18),b=m.index+k.length+18;
+   vs[k]={n:0,s:(a?'âŚ':'')+esc(p.slice(a,m.index))+'<mark>'+esc(k)+'</mark>'+esc(p.slice(m.index+k.length,b))+(b<p.length?'âŚ':'')}}
+  vs[k].n++;if(!k.length)break}});
+ var ks=Object.keys(vs);
+ if(!ks.length){sr.innerHTML='<span class="ch no">â â'+esc(q)+'â file me nahi mila</span>';return}
+ var h='';ks.forEach(function(k){
+  var done=fields.some(function(x){return x.f===k&&x.r!==''});
+  h+='<div class="card" style="margin-bottom:8px"><span class="ch ok" style="margin:0">â â'+esc(k)+'â mila Âˇ '+vs[k].n+' jagah</span>'+
+  (done?'<span class="ch ok" style="margin:0 0 0 6px">â Replace hua</span>':'')+'<div class="snip">'+vs[k].s+'</div></div>'});
+ sr.innerHTML=h;$('sb').classList.remove('hide');window.smartKeys=ks}
+$('sq').oninput=smart;
+$('sgo').onclick=function(){var v=$('sv').value;if(!v||!window.smartKeys)return;
+ window.smartKeys.forEach(function(k){var x=fields.find(function(y){return y.f===k});
+  if(x)x.r=v;else fields.push({l:'Smart',f:k,r:v})});
+ keep();draw();render();smart();note('â Replace ho gaya')};
+/* Auto detect */
+var dets=[],fontW={},pruns=[],defFont='';
+var TYPES=['Name','C/O','Company','Mobile','Aadhaar','PAN','GSTIN','Email','Pincode','Address','Age','Date','Invoice No'];
+var ICON={'Name':'đ¤','C/O':'đĽ','Company':'đ˘','Mobile':'đą','Aadhaar':'đŞŞ','PAN':'đł','GSTIN':'đ§ž','Email':'âď¸','Pincode':'đ','Address':'đ ','Age':'đ','Date':'đ','Invoice No':'#ď¸âŁ'};
+var LAB=[['Name',/^(customer |party |patient |student |candidate |holder |employee |client |bill to |ship to )?name$/i],
+ ['Company',/^(company|firm|organi[sz]ation|business|employer)\s*(name)?$/i],
+ ['Address',/^(address|addr|add\s?\d?|area|location|permanent address|current address|residential address)$/i],
+ ['Mobile',/^(mobile|mob|phone|contact|cell|tel)\s*(no\.?|number)?$/i],
+ ['Age',/^age$/i],['C/O',/^c\/o$/i],
+ ['Invoice No',/^(invoice|inv|bill|receipt)\s*(no\.?|number)$/i]];
+function lab(t){t=(t||'').trim();for(var i=0;i<LAB.length;i++)if(LAB[i][1].test(t))return LAB[i][0];return null}
+function fontAt(pi,off){var rs=pruns[pi]||[];for(var i=0;i<rs.length;i++)if(off>=rs[i].a&&off<rs[i].b)return rs[i].f;return rs.length?rs[0].f:(defFont||'Default')}
+function detect(){
+ var out={};dets=[];
+ function add(type,val,pi,off){val=(val||'').trim();if(!val)return;var k=type+'|'+val.toLowerCase();
+  if(out[k]){out[k].n++;return}
+  out[k]={type:type,val:val,n:1,font:fontAt(pi,off),nv:type==='Age'?val:''};dets.push(out[k])}
+ function nd(p,a,b){return !/\d/.test(p.charAt(a-1))&&!/\d/.test(p.charAt(b))}
+ function na(p,a,b){return !/[A-Za-z0-9]/.test(p.charAt(a-1))&&!/[A-Za-z0-9]/.test(p.charAt(b))}
+ var KW=/\b(road|rd\.|street|marg|nagar|floor|plot|lane|bazar|bazaar|colony|society|sector|chowk|apartment|building|west|east|near|opp|tower|plaza|complex)\b/gi;
+ var CK=/\b(pvt\.?\s*ltd\.?|private\s+limited|limited|ltd\.?|llp|enterprises?|industries|traders|trading|solutions|technologies|corporation|corp\.?|& co\.?|and co\.?|company|associates|stores|infotech|services|agency|agencies)(?![\w])/i;
+ paras.forEach(function(p,i){
+  var m,r,gs=[],as=[];
+  r=/[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]/gi;
+  while((m=r.exec(p)))if(na(p,m.index,m.index+15)){gs.push([m.index,m.index+15]);add('GSTIN',m[0],i,m.index)}
+  r=/[A-Z]{5}[0-9]{4}[A-Z]/gi;
+  while((m=r.exec(p))){var ix=m.index;if(gs.some(function(g){return ix>=g[0]&&ix<g[1]}))continue;if(na(p,ix,ix+10))add('PAN',m[0],i,ix)}
+  r=/[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}/g;
+  while((m=r.exec(p)))if(nd(p,m.index,m.index+m[0].length)&&(/[\s-]/.test(m[0])||/aadh?a?a?r|uid/i.test(p))){as.push([m.index,m.index+m[0].length]);add('Aadhaar',m[0],i,m.index)}
+  r=/(?:\+?91[\s-]?)?[6-9]\d{9}/g;
+  while((m=r.exec(p))){var jx=m.index;if(as.some(function(g){return jx>=g[0]&&jx<g[1]}))continue;if(nd(p,jx,jx+m[0].length))add('Mobile',m[0],i,jx)}
+  r=/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g;while((m=r.exec(p)))add('Email',m[0],i,m.index);
+  r=/pin(?:\s*code)?\s*[:\-]?\s*([1-9]\d{5})(?!\d)/gi;while((m=r.exec(p)))add('Pincode',m[1],i,m.index+m[0].length-6);
+  r=/(?:^|\D)(\d{1,2}[-\/.]\d{1,2}[-\/.]\d{2,4})(?!\d)/g;while((m=r.exec(p)))add('Date',m[1],i,m.index+m[0].indexOf(m[1]));
+  r=/\bage\s*[:\-]?\s*\d{1,3}(?:\s*(?:yrs?|years?))?|\b\d{1,3}\s*years?\s*old\b/gi;while((m=r.exec(p)))add('Age',m[0],i,m.index);
+  var t1=null,v1=null,m1=p.match(/^\s*([A-Za-z\/][A-Za-z\/\. ]{0,24}?)\s*[:\-]\s*(\S.*)$/);
+  if(m1&&lab(m1[1])){t1=lab(m1[1]);v1=m1[2]}
+  else{var m2=p.match(/^\s*[:\-]\s*(\S.*)$/);if(m2&&i>0&&lab(paras[i-1])){t1=lab(paras[i-1]);v1=m2[1]}}
+  if(t1&&v1&&t1!=='Age'){v1=v1.trim().slice(0,100);add(t1,v1,i,Math.max(0,p.lastIndexOf(v1)))}
+  var kw=p.match(KW),pin=/\b[1-9]\d{5}\b/.test(p);
+  if(p.length>=15&&p.length<=160&&kw&&(kw.length>=2||(pin&&kw.length>=1)))add('Address',p,i,0);
+  if(CK.test(p)&&!/@/.test(p)){
+   if(p.length<=80)add('Company',p.replace(/^\s*for\s+/i,''),i,0);
+   else{var cm=p.match(/((?:[A-Z0-9][\w&.'()-]*\s+){1,6}(?:Pvt\.?\s*Ltd\.?|Private\s+Limited|Limited|LLP))/);if(cm)add('Company',cm[1],i,p.indexOf(cm[1]))}}
+ });
+ dets.sort(function(a,b){return TYPES.indexOf(a.type)-TYPES.indexOf(b.type)})}
+function drawDet(){
+ var d=$('dt');
+ if(!buf){d.innerHTML='<p class="hint">Pehle file import karo.</p>';return}
+ var ks=Object.keys(fontW).sort(function(a,b){return fontW[b]-fontW[a]}),tot=0;ks.forEach(function(k){tot+=fontW[k]});
+ var h=aiCard()+'<div class="card"><b>đ¤ File ke fonts</b><div>'+ks.map(function(k){return '<span class="ch ok" style="font-family:\''+esc(k)+'\',sans-serif">'+esc(k)+' Âˇ '+Math.round(fontW[k]*100/(tot||1))+'%</span>'}).join('')+'</div>'+
+  (defFont?'<div class="hint" style="margin:8px 0 0">Default font: '+esc(defFont)+'</div>':'')+'</div>';
+ if(!dets.length)h+='<p class="hint">Is file me koi detail auto detect nahi hui. Smart tab se search karo.</p>';
+ var last='';
+ dets.forEach(function(x,i){
+  if(x.type!==last){last=x.type;h+='<div class="hint" style="margin:14px 0 6px"><b>'+ICON[x.type]+' '+x.type+'</b></div>'}
+  var done=fields.some(function(f){return f.f===x.val&&f.r!==''});
+  h+='<div class="card"><span class="ch ok" style="margin:0">â Detect hua</span>'+(done?'<span class="ch ok" style="margin:0 0 0 6px">â Replace hua</span>':'')+
+  '<span class="ch" style="margin:0 0 0 6px">đ¤ '+esc(x.font)+'</span>'+(x.n>1?'<span class="ch" style="margin:0 0 0 6px">'+x.n+' jagah</span>':'')+
+  '<div style="font-weight:600;margin:10px 0;word-break:break-word">'+esc(x.val)+'</div>'+
+  '<input type="text" data-di="'+i+'" placeholder="Naya text" value="'+esc(x.nv)+'">'+
+  '<button class="p big" data-dg="'+i+'" style="margin-top:8px">Replace</button></div>'});
+ d.innerHTML=h}
+var S={theme:'',q:'n',ip:'a4',ai:'off'},aiText='',aiLog='';
+try{Object.assign(S,JSON.parse(localStorage.getItem('wes')||'{}'))}catch(e){}
+function applyS(){if(S.theme)document.documentElement.setAttribute('data-theme',S.theme);else document.documentElement.removeAttribute('data-theme')}
+var TK={name:'Name',naam:'Name','customer name':'Name','party name':'Name',mobile:'Mobile',mob:'Mobile',phone:'Mobile',number:'Mobile','mobile number':'Mobile','mobile no':'Mobile',contact:'Mobile','contact no':'Mobile',address:'Address',pata:'Address',addr:'Address',company:'Company','company name':'Company',firm:'Company',pan:'PAN','pan no':'PAN','pan number':'PAN',aadhaar:'Aadhaar',aadhar:'Aadhaar',adhar:'Aadhaar','aadhaar number':'Aadhaar','aadhar number':'Aadhaar',age:'Age',umar:'Age',pincode:'Pincode',pin:'Pincode',email:'Email',mail:'Email','email id':'Email',date:'Date',tarikh:'Date',gstin:'GSTIN',gst:'GSTIN','gst no':'GSTIN',invoice:'Invoice No','invoice no':'Invoice No','invoice number':'Invoice No','c/o':'C/O'};
+var VAL={Mobile:/^(\+?91[\s-]?)?[6-9]\d{9}$/,PAN:/^[A-Z]{5}\d{4}[A-Z]$/i,Aadhaar:/^[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}$/,Pincode:/^[1-9]\d{5}$/,Email:/^[\w.+-]+@[\w-]+(\.[\w-]+)+$/,GSTIN:/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/i};
+var VERB=/\s+(?:(?:se|me|mein|ke\s+sath|ke\s+saath)\s+)?(?:replace|badlo|badal\s+do|badal\s+dena|badal|karo|kar\s+do|kardo|kar\s+dena|change|rakho|likho|dalo|daal\s+do|set|update)(?:\s+(?:karo|do|dena))?\s*$/i;
+function tk(w){return TK[(w||'').trim().toLowerCase().replace(/[.:]+$/,'').replace(/\s+/g,' ')]||null}
+function aiParse(txt){
+ var keys=Object.keys(TK).map(function(k){return k.replace('/','\\/')}).join('|');
+ var re=new RegExp(',\\s*(?=(?:'+keys+')\\b)','i'),cl=[];
+ txt.split(/\n|;|\s+aur\s+/i).forEach(function(p){p.split(re).forEach(function(c){c=c.trim();if(c)cl.push(c)})});
+ return cl.map(function(c){
+  var l=c.toLowerCase(),m;
+  if(/^(reset|undo|clear|sab hatao|sab clear)/.test(l))return{cmd:'reset'};
+  if(/^(preview|dekho|dikhao|show)/.test(l))return{cmd:'preview'};
+  if(/^(save|download).*pdf/.test(l))return{cmd:'pdf'};
+  if(/^(save|download).*(word|docx)/.test(l))return{cmd:'word'};
+  if(/^(scan|detect|search)/.test(l))return{cmd:'scan'};
+  var s=c.replace(VERB,'');
+  if((m=c.match(/^replace\s+(.+?)\s+(?:with|by)\s+(.+)$/i)))return{src:m[1],val:m[2]};
+  if((m=c.match(/^(.+?)\s*(?:->|=>|â)\s*(.+)$/)))return{src:m[1],val:m[2].replace(VERB,'')};
+  if((m=s.match(/^(.+?)\s+ko\s+(.+)$/i)))return{src:m[1],val:m[2]};
+  var w=s.replace(/^(mera|meri|mere|my)\s+/i,'').split(/\s+/);
+  for(var k=Math.min(3,w.length-1);k>=1;k--){var key=w.slice(0,k).join(' ');
+   if(tk(key)){var v=w.slice(k).join(' ').replace(/^(ko|ka|ki|ke)\s+/i,'').replace(/^[:=]\s*/,'').trim();if(v)return{src:key,val:v}}}
+  return{err:c}})}
+function setRule(f,v,l){var x=fields.find(function(y){return y.f===f});if(x)x.r=v;else fields.push({l:l||'AI',f:f,r:v})}
+function aiApply(acts){
+ var log=[];
+ acts.forEach(function(a){
+  if(a.cmd){if(a.cmd==='reset'){fields.forEach(function(f){f.r=''});log.push(['ok','â Sab replace hata diye'])}
+   else if(a.cmd==='preview')show(1);else if(a.cmd==='pdf')$('dp').click();else if(a.cmd==='word')$('dw').click();
+   else if(a.cmd==='scan'){detect();var c={};dets.forEach(function(d){c[d.type]=(c[d.type]||0)+1});log.push(['ok','â Detect: '+(Object.keys(c).map(function(k){return k+' '+c[k]}).join(', ')||'kuch nahi mila')])}return}
+  if(a.err){log.push(['no','â Samajh nahi aaya: '+a.err]);return}
+  var t=tk(a.src),val=a.val.trim();
+  if(t){var it=dets.filter(function(d){return d.type===t});
+   if(!it.length){log.push(['no','â '+t+' file me detect nahi hua']);return}
+   if(VAL[t]&&!VAL[t].test(val)){log.push(['no','â  '+t+' ka format sahi nahi hai, isliye nahi badla']);return}
+   it.forEach(function(d){var nv=(t==='Age'&&/^\d+$/.test(val))?d.val.replace(/\d+/,val):val;setRule(d.val,nv,t);log.push(['ok','â '+t+': '+d.val+' â '+nv])});}
+  else if(cnt(a.src)){setRule(a.src,val,'AI');log.push(['ok','â '+a.src+' â '+val])}
+  else log.push(['no','â â'+a.src+'â file me nahi mila'])});
+ return log}
+async function aiGo(){
+ var t=aiText.trim();if(!t||!buf)return;
+ aiLog='<span class="ch">âł Kaam chal raha hai...</span>';drawDet();var log=[];
+ if(S.ai==='claude'){try{
+  var sm=window.claude&&window.claude.use?await window.claude.use('sample'):null;if(!sm)throw 0;
+  var rr=await sm.json('Tum document editing assistant ho. Document text:\n'+paras.slice(0,150).join('\n').slice(0,6000)+'\n\nDetected: '+JSON.stringify(dets.map(function(d){return{t:d.type,v:d.val}}))+'\n\nUser command: '+t+'\n\nSirf JSON array do: [{"find":"document me jo text bilkul waisa likha hai","replace":"naya text"}]. Kuch na badalna ho to [].');
+  (Array.isArray(rr)?rr:[]).forEach(function(p){if(p&&p.find&&cnt(String(p.find))){setRule(String(p.find),String(p.replace||''),'AI');log.push(['ok','â '+p.find+' â '+p.replace])}else log.push(['no','â '+(p&&p.find)+' nahi mila'])})
+ }catch(e){log=[['no','Claude AI abhi available nahi, offline mode chala']]}}
+ if(!log.some(function(l){return l[0]==='ok'}))log=log.concat(aiApply(aiParse(t)));
+ aiLog=log.map(function(l){return '<span class="ch '+l[0]+'" style="display:block;margin:6px 0 0">'+esc(l[1])+'</span>'}).join('');
+ if(log.some(function(l){return l[0]==='ok'})){keep();draw();render();note('â AI ne kaam kar diya')}
+ drawDet()}
+function aiCard(){return '<div class="card"><b>â¨ AI Assistant</b><span class="ch ok" style="margin:0 0 0 6px">'+(S.ai==='claude'?'Claude (online)':'Offline')+'</span>'+
+ '<div class="hint" style="margin:6px 0">Hinglish me likho. Detect kiye hue Name, Mobile, Address, Company, PAN, Aadhaar, Age sab par kaam karta hai.</div>'+
+ '<textarea id="aiq" rows="3" placeholder="Jaise: name Amit Verma karo, mobile 9876543210 karo">'+esc(aiText)+'</textarea>'+
+ '<div>'+['name Amit Verma karo','mobile 9876543210 karo','Santosh ko Amit se replace karo','scan'].map(function(e){return '<span class="ch" data-ex="'+esc(e)+'" style="cursor:pointer">'+esc(e)+'</span>'}).join('')+'</div>'+
+ '<button class="p big" data-ai="run" style="margin-top:8px">â¨ Run</button><div>'+aiLog+'</div></div>'}
+$('dt').oninput=function(e){var i=e.target.dataset.di;if(i!=null)dets[i].nv=e.target.value;if(e.target.id==='aiq')aiText=e.target.value};
+$('dt').onclick=function(e){var d=e.target.dataset;
+ if(d.ex!=null){aiText=d.ex;drawDet();return}
+ if(d.ai==='run'){aiGo();return}
+ if(d.dg==null)return;var x=dets[d.dg];if(x.nv==='')return;
+ setRule(x.val,x.nv,x.type);keep();draw();render();drawDet();note('â Replace ho gaya')};
+/* Save */
+async function save(data,name){
+ try{
+  /* Use a normal browser download: host-specific download APIs may switch/close the editor. */
+  var url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';a.rel='noopener';document.body.appendChild(a);a.click();
+  setTimeout(function(){try{a.remove();URL.revokeObjectURL(url)}catch(e){}},60000);
+  note('âŹ Save/download request bhej diya. Agar iPhone par Files khule, Save to Files karein. Aapka kaam recovery me bhi save hai.');
+  scheduleDraftSave();
+ }catch(e){alert('Save nahi hua: '+((e&&e.message)||e)+'\nPage band na karein; dobara try karein.')}}
+$('dw').onclick=function(){if(blob)save(blob,base+'-edited.docx')};
+$('savePreview').onclick=function(){
+ if(!blob){alert('Pehle Word file import karein.');return}
+ save(blob,base+'-edited.docx')
+};
+async function w2p(wb,st){
+ if(typeof html2canvas==='undefined'||typeof jspdf==='undefined')throw new Error('PDF library load nahi hui. Page reload karo.');
+ var h=$('hid');h.innerHTML='';await docx.renderAsync(wb,h,null,{inWrapper:true,breakPages:true});
+ var secs=h.querySelectorAll('section.docx'),doc=null,sc=S.q==='h'?3:2,jq=S.q==='h'?.95:.85;
+ for(var i=0;i<secs.length;i++){if(st)st('Page '+(i+1)+'/'+secs.length+' ...');
+  var s=secs[i],w=s.offsetWidth,hh=s.offsetHeight,c=await html2canvas(s,{scale:sc,backgroundColor:'#ffffff',useCORS:true}),o=w>hh?'l':'p';
+  if(!doc)doc=new jspdf.jsPDF({unit:'px',format:[w,hh],orientation:o,hotfixes:['px_scaling']});else doc.addPage([w,hh],o);
+  doc.addImage(c.toDataURL('image/jpeg',jq),'JPEG',0,0,w,hh)}
+ h.innerHTML='';return doc.output('blob')}
+$('dp').onclick=async function(){
+ if(!blob)return;var b=this,t=b.textContent;b.disabled=true;b.textContent='PDF...';
+ try{await save(await w2p(blob),base+'-edited.pdf')}catch(e){alert('PDF nahi bana: '+(e.message||e))}
+ b.disabled=false;b.textContent=t};
+/* Sheets */
+function openSheet(t,h){$('stt').textContent=t;$('sbd').innerHTML=h;$('sheet').classList.remove('hide')}
+$('sx').onclick=function(){$('sheet').classList.add('hide')};
+/* Convert */
+var cres=null,ckind='';
+function ld(u){return new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=function(){no(new Error('PDF library load nahi hui (internet check karo)'))};document.head.appendChild(s)})}
+async function needPdfjs(){
+ var B='https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/',W=window;
+ if(!W.pdfjsLib&&!W['pdfjs-dist/build/pdf'])await ld(B+'pdf.min.js');
+ if(!W.pdfjsWorker&&!W['pdfjs-dist/build/pdf.worker'])await ld(B+'pdf.worker.min.js');
+ var P=W.pdfjsLib||W['pdfjs-dist/build/pdf'];if(!P)throw new Error('PDF reader load nahi hua');
+ if(!W.pdfjsWorker){W.pdfjsWorker=W['pdfjs-dist/build/pdf.worker'];
+  if(!W.pdfjsWorker)for(var k in W){try{if(W[k]&&W[k].WorkerMessageHandler){W.pdfjsWorker=W[k];break}}catch(e){}}}
+ P.GlobalWorkerOptions.workerSrc=B+'pdf.worker.min.js';return P}
+function imgXml(id,cx,cy,pb){return '<w:p><w:pPr>'+(pb?'<w:pageBreakBefore/>':'')+'</w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+Math.round(cx)+'" cy="'+Math.round(cy)+'"/><wp:docPr id="'+id+'" name="Picture '+id+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+id+'" name="img'+id+'.jpeg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdI'+id+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+Math.round(cx)+'" cy="'+Math.round(cy)+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>'}
+async function pdf2docx(file,st){
+ st('PDF reader load ho raha hai...');var P=await needPdfjs(),pdf,body='',media=[],W=595,H=842;
+ try{pdf=await P.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false,useWorkerFetch:false}).promise}catch(e){throw new Error('PDF khuli nahi: '+(e.message||e))}
+ for(var pn=1;pn<=pdf.numPages;pn++){
+  st('Page '+pn+'/'+pdf.numPages+' convert ho raha hai...');
+  var pg=await pdf.getPage(pn),vp=pg.getViewport({scale:1});if(pn===1){W=vp.width;H=vp.height}
+  var tc=await pg.getTextContent(),its=tc.items.filter(function(i){return i.str&&i.str.trim()});
+  if(!its.length){
+   var v2=pg.getViewport({scale:1.6}),cv=document.createElement('canvas');cv.width=v2.width;cv.height=v2.height;
+   await pg.render({canvasContext:cv.getContext('2d'),viewport:v2}).promise;
+   var bl=await new Promise(function(r){cv.toBlob(r,'image/jpeg',.85)});
+   media.push(new Uint8Array(await bl.arrayBuffer()));var cw=W-72;
+   body+=imgXml(media.length,cw*12700,cw*vp.height/vp.width*12700,pn>1);continue}
+  its.forEach(function(i){i.y=i.transform[5];i.x=i.transform[4];i.s=Math.abs(i.transform[3])||i.height||10});
+  its.sort(function(a,b){return b.y-a.y});
+  var lines=[];its.forEach(function(i){var L=lines[lines.length-1];if(L&&Math.abs(L.y-i.y)<i.s*.45)L.it.push(i);else lines.push({y:i.y,it:[i]})});
+  var prevY=null,first=true;
+  lines.forEach(function(L){L.it.sort(function(a,b){return a.x-b.x});
+   var runs='',px=null,sz=L.it[0].s;
+   L.it.forEach(function(i){var t=i.str,gap=px==null?0:i.x-px;
+    if(px!=null&&gap>i.s*3)runs+='<w:r><w:tab/></w:r>';else if(px!=null&&gap>i.s*.2)t=' '+t;
+    runs+='<w:r><w:rPr><w:sz w:val="'+Math.max(8,Math.round(i.s*2))+'"/></w:rPr><w:t xml:space="preserve">'+esc(t)+'</w:t></w:r>';px=i.x+(i.width||0)});
+   var bef=prevY==null?0:Math.min(2400,Math.max(0,Math.round((prevY-L.y-sz*1.25)*20))),ind=Math.max(0,Math.round((L.it[0].x-36)*20));
+   body+='<w:p><w:pPr>'+(first&&pn>1?'<w:pageBreakBefore/>':'')+'<w:spacing w:before="'+bef+'" w:after="0" w:line="240" w:lineRule="auto"/><w:ind w:left="'+ind+'"/></w:pPr>'+runs+'</w:p>';
+   prevY=L.y;first=false})}
+ var X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',z=new JSZip(),rels='';
+ media.forEach(function(m,i){z.file('word/media/img'+(i+1)+'.jpeg',m);rels+='<Relationship Id="rIdI'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/img'+(i+1)+'.jpeg"/>'});
+ z.file('[Content_Types].xml',X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+ z.file('_rels/.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+ z.file('word/_rels/document.xml.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>');
+ z.file('word/document.xml',X+'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>'+body+'<w:sectPr><w:pgSz w:w="'+Math.round(W*20)+'" w:h="'+Math.round(H*20)+'"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>');
+ return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'})}
+function loadImg(f){return new Promise(function(ok,no){var u=URL.createObjectURL(f),i=new Image();i.onload=function(){ok(i)};i.onerror=function(){no(new Error('Image khuli nahi: '+f.name))};i.src=u})}
+async function img2pdf(files,st){
+ if(typeof jspdf==='undefined')throw new Error('PDF library load nahi hui. Page reload karo.');
+ var doc=null;
+ for(var i=0;i<files.length;i++){st('Image '+(i+1)+'/'+files.length+' ...');
+  var im=await loadImg(files[i]),c=document.createElement('canvas'),iw=c.width=im.naturalWidth,ih=c.height=im.naturalHeight,cx=c.getContext('2d');
+  cx.fillStyle='#fff';cx.fillRect(0,0,iw,ih);cx.drawImage(im,0,0);
+  var d=c.toDataURL('image/jpeg',S.q==='h'?.95:.85),pw,ph,x=0,y=0,w,h;
+  if(S.ip==='img'){pw=w=iw*.75;ph=h=ih*.75}
+  else{var ld2=iw>ih;pw=ld2?841.89:595.28;ph=ld2?595.28:841.89;var k=Math.min((pw-40)/iw,(ph-40)/ih);w=iw*k;h=ih*k;x=(pw-w)/2;y=(ph-h)/2}
+  var o=pw>ph?'l':'p';
+  if(!doc)doc=new jspdf.jsPDF({unit:'pt',format:[pw,ph],orientation:o});else doc.addPage([pw,ph],o);
+  doc.addImage(d,'JPEG',x,y,w,h)}
+ return doc.output('blob')}
+function cvSheet(){cres=null;openSheet('Convert file',
+ '<div class="opt" data-c="p2w"><b>đ â đ PDF to Word</b><span>PDF se editable .docx (scan wali PDF image ban kar aati hai)</span></div>'+
+ '<div class="opt" data-c="w2p"><b>đ â đ Word to PDF</b><span>.docx file se PDF</span></div>'+
+ '<div class="opt" data-c="i2p"><b>đź â đ Image to PDF</b><span>Ek ya kai photo ek PDF me (JPG, PNG, WebP)</span></div>'+
+ '<div id="cst" class="hint"></div><div id="cout"></div><div class="hint">Convert aapke phone me hi hota hai, file kisi server par upload nahi hoti.</div>')}
+async function cvRun(kind,files){
+ var st=function(m){$('cst').textContent=m},out=$('cout');out.innerHTML='';
+ try{var r;
+  if(kind==='p2w')r={b:await pdf2docx(files[0],st),n:files[0].name.replace(/\.pdf$/i,'')+'.docx',w:1};
+  else if(kind==='w2p')r={b:await w2p(files[0],st),n:files[0].name.replace(/\.docx$/i,'')+'.pdf'};
+  else r={b:await img2pdf(files,st),n:'images.pdf'};
+  cres=r;st('');
+  out.innerHTML='<div class="card"><span class="ch ok" style="margin:0">â Convert ho gaya</span><div style="margin:8px 0;word-break:break-word"><b>'+esc(r.n)+'</b> Âˇ '+Math.round(r.b.size/1024)+' KB</div><button class="p big" data-c="dl">âŹ Download</button>'+(r.w?'<button class="p big" data-c="open" style="margin-top:8px">Edit file</button>':'')+'<button class="big" data-c="drv" style="margin-top:8px">đ Drive me save</button></div>'
+ }catch(e){st('â '+(e.message||e))}}
+$('cvb').onclick=cvSheet;
+$('cf').onchange=async function(){var fs=Array.from(this.files);this.value='';if(fs.length)cvRun(ckind,fs)};
+/* Settings */
+function setSheet(){
+ function sel(k,o){return '<select data-s="'+k+'">'+o.map(function(x){return '<option value="'+x[0]+'"'+(S[k]===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'}
+ openSheet('Settings','<div id="drv"></div><label>Theme</label>'+sel('theme',[['','Auto (phone jaisa)'],['light','Light'],['dark','Dark']])+
+ '<label>PDF quality</label>'+sel('q',[['n','Normal (chhoti file)'],['h','High (saaf, badi file)']])+
+ '<label>Image to PDF page</label>'+sel('ip',[['a4','A4 page me fit'],['img','Image ke size ka page']])+
+ '<label>AI mode</label>'+sel('ai',[['off','Offline (phone me hi)'],['claude','Claude online (zyada smart)']])+
+ '<div class="hint">Claude mode me AI ke command ke sath document ka text Claude ko bheja jata hai. Offline mode me kuch bahar nahi jata.</div>'+
+ '<button class="big" data-s="clr">Saved options reset karo</button>');drvDraw()}
+$('sbtn').onclick=setSheet;
+$('sbd').onchange=function(e){var k=e.target.dataset.s;if(!k||k==='clr')return;S[k]=e.target.value;try{localStorage.setItem('wes',JSON.stringify(S))}catch(x){}applyS();drawDet()};
+$('sbd').onclick=async function(e){var el=e.target.closest('[data-c],[data-s],[data-dk]');if(!el)return;var d=el.dataset;
+ if(d.s==='clr'){fields=[{l:'Name',f:'',r:''},{l:'Mobile number',f:'',r:''},{l:'Address',f:'',r:''}];keep();draw();render();drawDet();$('sheet').classList.add('hide');return}
+ if(d.c==='p2w'||d.c==='w2p'||d.c==='i2p'){ckind=d.c;var f=$('cf');f.accept=d.c==='p2w'?'.pdf,application/pdf':d.c==='w2p'?'.docx':'image/*';f.multiple=d.c==='i2p';f.click();return}
+ if(d.c==='dl'&&cres){save(cres.b,cres.n);return}
+ if(d.c==='open'&&cres){$('sheet').classList.add('hide');await openDoc(await cres.b.arrayBuffer(),cres.n);show(5);return}
+ if(d.c==='drv'&&cres){drvAdd(cres.n,cres.b);return}
+ if(d.dk)drvAct(d.dk,+d.id)};
+/* Drive */
+var DQ=3*1024*1024,DB=null;
+function dbo(){return new Promise(function(ok,no){if(DB)return ok(DB);var r=indexedDB.open('wedrive',1);r.onupgradeneeded=function(){r.result.createObjectStore('f',{keyPath:'id',autoIncrement:true})};r.onsuccess=function(){DB=r.result;ok(DB)};r.onerror=function(){no(r.error)}})}
+function dtx(m,fn){return dbo().then(function(d){return new Promise(function(ok,no){var t=d.transaction('f',m),q=fn(t.objectStore('f'));t.oncomplete=function(){ok(q&&q.result)};t.onerror=function(){no(t.error)}})})}
+function drvList(){return dtx('readonly',function(s){return s.getAll()}).then(function(a){a.sort(function(x,y){return y.t-x.t});return a})}
+async function drvDraw(){var box=$('drv');if(!box)return;
+ try{var a=await drvList(),u=0;a.forEach(function(f){u+=f.size});
+  box.innerHTML='<div class="card"><b>đ My Drive</b><span class="ch" style="margin:0 0 0 6px">'+(u/1048576).toFixed(2)+' / 3 MB</span>'+
+   '<div style="height:6px;background:var(--soft);border-radius:3px;margin:8px 0"><div style="height:6px;border-radius:3px;background:var(--ac);width:'+Math.min(100,u*100/DQ)+'%"></div></div>'+
+   '<button class="big" data-dk="cur">ďź Edited Word file save karo</button><button class="big" data-dk="up" style="margin-top:8px">ďź Phone se file daalo</button>'+
+   a.map(function(f){return '<div class="opt" style="margin:10px 0 0"><b style="word-break:break-all">'+esc(f.name)+'</b><span>'+Math.round(f.size/1024)+' KB</span><div style="display:flex;gap:6px;margin-top:8px">'+(/\.docx$/i.test(f.name)?'<button data-dk="open" data-id="'+f.id+'">Edit</button>':'')+'<button data-dk="share" data-id="'+f.id+'">â Share</button><button data-dk="del" data-id="'+f.id+'">đ</button></div></div>'}).join('')+
+   (a.length?'':'<div class="hint" style="margin-top:8px">Abhi koi file nahi hai.</div>')+'<div class="hint" style="margin:8px 0 0">Ye drive sirf is phone/browser me hai aur offline kaam karta hai. Share se file WhatsApp, Mail, Drive jaha chaho bhej sakte ho.</div></div>'
+ }catch(e){box.innerHTML='<div class="card hint">Drive is view me available nahi hai.</div>'}}
+async function drvAdd(name,b){
+ try{var ab=await b.arrayBuffer(),a=await drvList(),u=0;a.forEach(function(f){u+=f.size});
+  if(u+ab.byteLength>DQ){alert('Drive me jagah kam hai (3 MB). Kuch file delete karo.');return}
+  var ty=b.type||(/\.docx$/i.test(name)?'application/vnd.openxmlformats-officedocument.wordprocessingml.document':/\.pdf$/i.test(name)?'application/pdf':'');
+  await dtx('readwrite',function(s){return s.add({name:name,size:ab.byteLength,type:ty,data:ab,t:Date.now()})});note('â Drive me save ho gaya');drvDraw()
+ }catch(e){alert('Drive save nahi hua: '+(e.message||e))}}
+async function drvAct(k,id){
+ if(k==='cur'){if(!blob){alert('Pehle file import karo');return}drvAdd(base+'-edited.docx',blob);return}
+ if(k==='up'){$('df').click();return}
+ var a=await drvList(),f=a.find(function(x){return x.id===id});if(!f)return;
+ if(k==='del'){await dtx('readwrite',function(s){return s.delete(id)});drvDraw();return}
+ if(k==='open'){$('sheet').classList.add('hide');await openDoc(f.data.slice(0),f.name);return}
+ var b=new Blob([f.data],{type:f.type});
+ try{var fl=new File([b],f.name,{type:f.type});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl],title:f.name});return}}catch(e){if(e&&e.name==='AbortError')return}
+ save(b,f.name)}
+$('df').onchange=async function(){var fs=Array.from(this.files);this.value='';for(var i=0;i<fs.length;i++)await drvAdd(fs[i].name,fs[i])};
+/* Import */
+async function openDoc(ab,name){base=name.replace(/\.docx$/i,'');buf=ab;zm=1;edits={};$('eq').value='';if($('fileLabel'))$('fileLabel').textContent=name+' Âˇ Ready to edit';
+ try{await load(buf)}catch(e){alert('File nahi khuli: '+e.message+'\nSahi .docx file select karein.');buf=null;if($('fileLabel'))$('fileLabel').textContent='Document editor Âˇ DOCX';return}
+ detect();drawDet();draw();show(1);await render();smart();scheduleDraftSave()}
+$('imp').onclick=function(){$('f').click()};
+$('f').onchange=async function(){var f=this.files[0];if(!f)return;await openDoc(await f.arrayBuffer(),f.name);this.value=''};
+applyS();draw();drawDet();show(1);restoreDraftOnStart();updateNetStatus();
+window.addEventListener('load',updateNetStatus);
+setTimeout(updateNetStatus,1200);
+</script>
+</body>
+</html>
